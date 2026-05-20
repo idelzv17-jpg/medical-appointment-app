@@ -66,26 +66,26 @@
                     <x-input-error for="address" class="mt-2" />
                 </div>
 
-                <div class="md:col-span-2">
-                    <label class="mb-2 block text-sm font-medium text-gray-700">Rol</label>
-                    <select name="role"
-                        class="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                        <option value="">Sin rol</option>
-                        @foreach ($roles as $role)
-                            <option value="{{ $role->name }}" @selected(old('role') === $role->name)>
-                                {{ $role->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <x-input-error for="role" class="mt-2" />
-                </div>
-            </div>
+                <div class="space-y-1">
+                    <x-native-select name="role_id" label="Rol" required>
+                        <option value="">
+                            Seleccione un rol
+                        </option>
 
-            <div class="flex justify-end">
-                <button type="submit"
-                    class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-8 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    Guardar
-                </button>
+                        @foreach ($roles as $role)
+                        <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
+                            {{ $role->name }}
+                        </option>
+                        @endforeach
+                    </x-native-select>
+                    <p class="text-sm text-gray-500">
+                        Define lo permisos y accesos del Usuarios.
+                    </p>
+                </div>
+
+                <div class="flex justify-end md:col-span-2">
+                    <x-button type="submit" primary>Guardar</x-button>
+                </div>
             </div>
         </form>
     </div>

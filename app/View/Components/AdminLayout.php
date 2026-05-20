@@ -8,14 +8,13 @@ use Illuminate\View\Component;
 
 class AdminLayout extends Component
 {
-    public $breadcrumbs;
-
-    /**
-     * Create a new component instance.
-     */
-    public function __construct($breadcrumbs = [])
-    {
-        $this->breadcrumbs = $breadcrumbs;
+    public function __construct(
+        public string $title = '',
+        public $breadcrumbs = [],
+    ) {
+        if ($this->title === '') {
+            $this->title = config('app.name', 'Laravel');
+        }
     }
 
     /**
@@ -23,6 +22,9 @@ class AdminLayout extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('layouts.admin');
+        return view('layouts.admin', [
+            'title' => $this->title,
+            'breadcrumbs' => $this->breadcrumbs,
+        ]);
     }
 }

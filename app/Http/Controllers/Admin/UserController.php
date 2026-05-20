@@ -6,108 +6,136 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $users = User::query()->with('roles')->orderBy('name')->get();
-
-        return view('admin.users.index', compact('users'));
+        return view('admin.users.index');
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
         $roles = Role::all();
-
         return view('admin.users.create', compact('roles'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'regex:/^[\pL\s\.\'-]+$/u'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'id_number' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9-]+$/'],
-            'phone' => ['nullable', 'string', 'max:20', 'regex:/^\+?[0-9]{8,15}$/'],
-            'address' => ['nullable', 'string', 'max:255'],
-            'role' => ['nullable', 'string', 'exists:roles,name'],
+        $data  = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'id_number' => 'required|string|min:5|max:20|regex:/^[A-Za-z0-9]+$/|unique:users',
+            'phone' => 'required|digits_between:7,15',
+            'address' => 'required|string|max:255',
+            'role_id' => 'required|exists:roles,id',
         ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'id_number' => $validated['id_number'] ?? null,
-            'phone' => $validated['phone'] ?? null,
-            'address' => $validated['address'] ?? null,
-        ]);
-
-        if (! empty($validated['role'])) {
-            $user->syncRoles([$validated['role']]);
-        }
+        $user = User::create($data);
+        $user->roles()->attach($data['role_id']);
 
         session()->flash('swal', [
             'icon' => 'success',
-            'title' => 'Usuario creado',
-            'text' => 'El usuario se ha creado correctamente',
+            'title' => 'Usuario creado exitosamente',
+            'text' => 'El usuario ha sido creado exitosamente',
         ]);
 
-        return redirect()->route('admin.users.index');
+        //si el usuario creado es un paciente, envia el modulo pacientes
+        if($user->hasRole('Paciente')){
+            //Creamos el registro del paciente
+           $patient = $user->patient()->create([]);
+           return redirect()->route('admin.patients.edit', $patient);
+          
+        }
+
+        return redirect(route('admin.users.index'))->with('success', 'User created succesfully.');
     }
 
+    /**
+     * Display the specified resource.
+     */
+    public function show(User $user)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(User $user)
     {
         $roles = Role::all();
-
         return view('admin.users.edit', compact('user', 'roles'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, User $user)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'regex:/^[\pL\s\.\'-]+$/u'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'id_number' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9-]+$/'],
-            'phone' => ['nullable', 'string', 'max:20', 'regex:/^\+?[0-9]{8,15}$/'],
-            'address' => ['nullable', 'string', 'max:255'],
-            'role' => ['nullable', 'string', 'exists:roles,name'],
+        $data  = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed',
+            'id_number' => 'required|string|min:5|max:20|regex:/^[A-Za-z0-9]+$/|unique:users,id_number,' . $user->id,
+            'phone' => 'required|digits_between:7,15',
+            'address' => 'required|string|max:255',
+            'role_id' => 'required|exists:roles,id',
         ]);
 
-        $user->update($validated);
+        // Si la contraseña viene vacía en el formulario, es porque no la quieren cambiar, la quitamos del array $data
+        if (empty($data['password'])) {
+            unset($data['password']);
+        } else {
+            // Si viene con datos, la encriptamos antes de actualizar
+            $data['password'] = bcrypt($data['password']);
+        }
 
-        $user->syncRoles(! empty($validated['role']) ? [$validated['role']] : []);
+        $user->update($data);
+
+        $user->roles()->sync($data['role_id']);
 
         session()->flash('swal', [
             'icon' => 'success',
             'title' => 'Usuario actualizado',
-            'text' => 'El usuario se ha actualizado correctamente',
+            'text' => 'El usuario ha sido actualizado exitosamente',
         ]);
 
-        return redirect()->route('admin.users.edit', $user);
+        return redirect()->route('admin.users.edit', $user->id);
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(User $user)
     {
+        //No permitir eliminar el usuario logueado
         if (Auth::id() === $user->id) {
-            abort(403, 'No puedes eliminarte a ti mismo');
+            abort(403, 'No puedes eliminar tu propia cuenta');
         }
 
-        if ($user->hasRole('Super administrador')) {
-            abort(403, 'No puedes eliminar al administrador principal');
-        }
-
+        //Eliminar roles asociados  a un usuario
+        $user->roles()->detach();
+        //Eliminar el usuario
         $user->delete();
 
         session()->flash('swal', [
             'icon' => 'success',
             'title' => 'Usuario eliminado',
-            'text' => 'El usuario se ha eliminado correctamente',
+            'text' => 'El usuario ha sido eliminado exitosamente',
         ]);
 
-        return redirect()->route('admin.users.index');
+        return redirect(route('admin.users.index'));
     }
 }

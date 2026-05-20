@@ -1,7 +1,3 @@
-@props([
-    'title' => config('app.name', 'Laravel'),
-    'breadcrumbs' =>  []
-])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -28,7 +24,14 @@
 
     <div class="p-4 sm:ml-64 mt-14">
       <div class="mt-14">
-      @include('layouts.includes.admin.breadcrumb')
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
+          @include('layouts.includes.admin.breadcrumb')
+          @if (isset($actions) && ! $actions->isEmpty())
+            <div class="flex shrink-0 items-center gap-2">
+              {{ $actions }}
+            </div>
+          @endif
+        </div>
       </div>
       {{ $slot }}
 
@@ -36,6 +39,7 @@
        
 
         @stack('modals')
+        @wireUiScripts
         @livewireScripts
         <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
     </body>

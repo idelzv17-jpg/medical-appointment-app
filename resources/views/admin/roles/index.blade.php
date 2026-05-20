@@ -2,12 +2,12 @@
     ['name' => 'Dashboard', 'href' => route('admin.dashboard')],
     ['name' => 'Roles'],
 ]">
-    <div class="flex justify-end mb-4">
-        <a href="{{ route('admin.roles.create') }}"
-            class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+    <x-slot name="actions">
+        <x-button primary href="{{ route('admin.roles.create') }}">
+            <i class="fa-solid fa-plus"></i>
             Crear rol
-        </a>
-    </div>
+        </x-button>
+    </x-slot>
 
     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <div class="overflow-x-auto">
@@ -33,17 +33,17 @@
                             <td class="py-2">
                                 <div class="flex justify-end gap-2">
                                     @if (! $role->is_system)
-                                        <a class="text-blue-600 hover:underline"
-                                            href="{{ route('admin.roles.edit', $role) }}">
+                                        <x-button primary flat sm href="{{ route('admin.roles.edit', $role) }}">
                                             Editar
-                                        </a>
-                                        <form class="delete-form" action="{{ route('admin.roles.destroy', $role) }}"
-                                            method="POST">
+                                        </x-button>
+                                        <form class="delete-form inline" action="{{ route('admin.roles.destroy', $role) }}"
+                                            method="POST"
+                                            onsubmit="return confirm('¿Eliminar este rol?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:underline">
+                                            <x-button type="submit" negative flat sm>
                                                 Eliminar
-                                            </button>
+                                            </x-button>
                                         </form>
                                     @else
                                         <span class="text-gray-400">—</span>
