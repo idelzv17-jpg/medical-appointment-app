@@ -4,9 +4,15 @@
     ['name' => 'Editar']
 ]">
 
-    <form action="{{ route('admin.patients.update', $patient) }}" method="POST">
+    <form action="{{ route('admin.patients.update', $patient) }}" method="POST" novalidate>
         @csrf
         @method('PUT')
+
+        @if (session('success'))
+            <div class="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+                {{ session('success') }}
+            </div>
+        @endif
 
         {{-- Encabezado con foto y acciones --}}
         <x-card class="mb-8">
@@ -26,43 +32,53 @@
             </div>
         </x-card>
 
+        @php
+            $patientTabFields = [
+                'antecedentes' => ['allergies', 'chronic_conditions', 'surgical_history', 'family_history'],
+                'informacion-general' => ['blood_type_id', 'observations'],
+                'contacto-emergencia' => ['emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship'],
+            ];
+            $patientInitialTab = collect($patientTabFields)->search(
+                fn ($fields) => $errors->hasAny($fields)
+            ) ?: 'datos-personales';
+        @endphp
+
         {{-- Tabs de navegación --}}
         <x-card>
-            <div x-data="{ tab: 'datos-personales' }">
-                {{-- Menú de pestañas --}}
+            <div x-data="{ tab: @js($patientInitialTab) }">
                 <div class="border-b border-gray-200 mb-4">
-                    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500">
-                        {{-- Tab 1: Datos personales --}}
-                        <li class="me-2">
-                            <a href="#" x-on:click.prevent="tab = 'datos-personales'"
-                               class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group transition-colors duration-200"
-                               :class="tab === 'datos-personales' ? 'text-blue-600 border-blue-600' : 'border-transparent hover:text-blue-600 hover:border-gray-300'">
-                                <i class="fa-solid fa-user me-2"></i> Datos personales
-                            </a>
+                    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
+                        <li class="relative me-2">
+                            @include('admin.patients.partials.tab-link', [
+                                'tabId' => 'datos-personales',
+                                'icon' => 'fa-user',
+                                'label' => 'Datos personales',
+                                'hasError' => false,
+                            ])
                         </li>
-                        {{-- Tab 2: Antecedentes --}}
-                        <li class="me-2">
-                            <a href="#" x-on:click.prevent="tab = 'antecedentes'"
-                               class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group transition-colors duration-200"
-                               :class="tab === 'antecedentes' ? 'text-blue-600 border-blue-600' : 'border-transparent hover:text-blue-600 hover:border-gray-300'">
-                                <i class="fa-solid fa-file-lines me-2"></i> Antecedentes
-                            </a>
+                        <li class="relative me-2">
+                            @include('admin.patients.partials.tab-link', [
+                                'tabId' => 'antecedentes',
+                                'icon' => 'fa-file-lines',
+                                'label' => 'Antecedentes',
+                                'hasError' => $errors->hasAny($patientTabFields['antecedentes']),
+                            ])
                         </li>
-                        {{-- Tab 3: Información general --}}
-                        <li class="me-2">
-                            <a href="#" x-on:click.prevent="tab = 'informacion-general'"
-                               class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group transition-colors duration-200"
-                               :class="tab === 'informacion-general' ? 'text-blue-600 border-blue-600' : 'border-transparent hover:text-blue-600 hover:border-gray-300'">
-                                <i class="fa-solid fa-info me-2"></i> Información general
-                            </a>
+                        <li class="relative me-2">
+                            @include('admin.patients.partials.tab-link', [
+                                'tabId' => 'informacion-general',
+                                'icon' => 'fa-info',
+                                'label' => 'Información general',
+                                'hasError' => $errors->hasAny($patientTabFields['informacion-general']),
+                            ])
                         </li>
-                        {{-- Tab 4: Contacto de emergencia --}}
-                        <li class="me-2">
-                            <a href="#" x-on:click.prevent="tab = 'contacto-emergencia'"
-                               class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group transition-colors duration-200"
-                               :class="tab === 'contacto-emergencia' ? 'text-blue-600 border-blue-600' : 'border-transparent hover:text-blue-600 hover:border-gray-300'">
-                                <i class="fa-solid fa-heart me-2"></i> Contacto de emergencia
-                            </a>
+                        <li class="relative me-2">
+                            @include('admin.patients.partials.tab-link', [
+                                'tabId' => 'contacto-emergencia',
+                                'icon' => 'fa-heart',
+                                'label' => 'Contacto de emergencia',
+                                'hasError' => $errors->hasAny($patientTabFields['contacto-emergencia']),
+                            ])
                         </li>
                     </ul>
                 </div>
@@ -112,7 +128,6 @@
                                         </span>
                                     </div>
                                 </div>
-                        @includeIf('admin.patients.partials.edit-datos-personales')
                     </div>
 
                     <div x-show="tab === 'antecedentes'">

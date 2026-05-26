@@ -6,7 +6,6 @@
         <x-input label="Nombre de contacto" name="emergency_contact_name"
             placeholder="Nombre completo del contacto de emergencia"
             value="{{ old('emergency_contact_name', $patient->emergency_contact_name) }}" />
-
         <x-input label="Relación" name="emergency_contact_relationship"
             placeholder="Relación con el paciente (ej: padre, hermano, amigo...)"
             value="{{ old('emergency_contact_relationship', $patient->emergency_contact_relationship) }}" />

@@ -58,6 +58,8 @@ class PatientController extends Controller
      */
     public function update(Request $request, Patient $patient)
     {
+        app()->setLocale('es');
+
         $data = $request->validate([
             'blood_type_id' => 'nullable|exists:blood_types,id',
             'allergies' => 'nullable|string|max:255',
@@ -68,9 +70,16 @@ class PatientController extends Controller
             'emergency_contact_name' => 'nullable|string|max:255',
             'emergency_contact_phone' => 'nullable|string|max:20',
             'emergency_contact_relationship' => 'nullable|string|max:255',
-        ], [
-        // Mensajes personalizados en español por si el usuario excede el límite
-        'max' => 'El campo :attribute no puede tener más de :max caracteres.',
+        ], [], [
+            'blood_type_id' => 'tipo de sangre',
+            'allergies' => 'alergias',
+            'chronic_conditions' => 'condiciones crónicas',
+            'surgical_history' => 'antecedentes quirúrgicos',
+            'family_history' => 'antecedentes familiares',
+            'observations' => 'observaciones',
+            'emergency_contact_name' => 'nombre del contacto de emergencia',
+            'emergency_contact_phone' => 'teléfono del contacto de emergencia',
+            'emergency_contact_relationship' => 'relación del contacto de emergencia',
         ]);
         $patient->update($data);
         session()->flash('swal', ['icon' => 'success', 'title' => '¡Éxito!', 'text' => 'Información del paciente actualizada correctamente.']);
