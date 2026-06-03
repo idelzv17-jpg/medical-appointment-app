@@ -78,4 +78,24 @@ class User extends Authenticatable
     {
         return $this->hasOne(Doctor::class);
     }
+
+    public function ensurePatientProfile(): void
+    {
+        if ($this->hasRole('Paciente') && ! $this->patient) {
+            $this->patient()->create([]);
+        }
+    }
+
+    public function ensureDoctorProfile(): void
+    {
+        if ($this->hasRole('Doctor') && ! $this->doctor) {
+            $this->doctor()->create([]);
+        }
+    }
+
+    public function syncRoleProfiles(): void
+    {
+        $this->ensurePatientProfile();
+        $this->ensureDoctorProfile();
+    }
 }

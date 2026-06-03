@@ -1,9 +1,10 @@
-﻿<?php
+<?php
 
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Doctor;
+use App\Models\Speciality;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
@@ -54,7 +55,9 @@ class DoctorController extends Controller
      */
     public function edit(Doctor $doctor)
     {
-        return view('admin.doctors.edit', compact('doctor'));
+        $specialities = Speciality::orderBy('name')->get();
+
+        return view('admin.doctors.edit', compact('doctor', 'specialities'));
     }
 
     /**
@@ -63,7 +66,9 @@ class DoctorController extends Controller
     public function update(Request $request, Doctor $doctor)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:255|unique:doctors,name,' . $doctor->id,
+            'speciality_id' => ['required', 'exists:specialities,id'],
+            'medical_license_number' => ['nullable', 'string', 'max:255'],
+            'biography' => ['nullable', 'string'],
         ]);
 
         $doctor->update($data);

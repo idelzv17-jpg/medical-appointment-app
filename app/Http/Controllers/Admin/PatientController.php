@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\BloodType;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class PatientController extends Controller
 {
@@ -14,6 +17,8 @@ class PatientController extends Controller
      */
     public function index()
     {
+        User::role('Paciente')->get()->each->syncRoleProfiles();
+
         return view('admin.patients.index');
     }
 
@@ -46,10 +51,11 @@ class PatientController extends Controller
      */
     public function edit(Patient $patient)
     {
-        // 1. Necesitas obtener los datos de la base de datos
+        app()->setLocale('es');
+
+        $patient->load('user');
         $blood_types = BloodType::all();
 
-        // 2. Debes incluir 'blood_types' en el compact
         return view('admin.patients.edit', compact('patient', 'blood_types'));
     }
 
@@ -60,7 +66,7 @@ class PatientController extends Controller
     {
         app()->setLocale('es');
 
-        $data = $request->validate([
+        $validator = Validator::make($request->all(), [
             'blood_type_id' => 'nullable|exists:blood_types,id',
             'allergies' => 'nullable|string|max:255',
             'chronic_conditions' => 'nullable|string|max:255',
@@ -81,8 +87,16 @@ class PatientController extends Controller
             'emergency_contact_phone' => 'teléfono del contacto de emergencia',
             'emergency_contact_relationship' => 'relación del contacto de emergencia',
         ]);
-        $patient->update($data);
+
+        if ($validator->fails()) {
+            throw (new ValidationException($validator))
+                ->redirectTo(route('admin.patients.edit', $patient));
+        }
+
+        $patient->update($validator->validated());
+
         session()->flash('swal', ['icon' => 'success', 'title' => '¡Éxito!', 'text' => 'Información del paciente actualizada correctamente.']);
+
         return redirect()->route('admin.patients.edit', $patient)->with('success', 'Información del paciente actualizada correctamente.');
     }
 
@@ -92,23 +106,5 @@ class PatientController extends Controller
     public function destroy(Patient $patient)
     {
         //
-    }
-
-    protected $fillable = [
-        'user',
-        'blood_type_id',
-        'name',
-        'allergies',
-        'chronic_conditions',
-        'surgical_history',
-        'family_history',
-        'observations',
-        'emergency_contact_name',
-        'emergency_contact_phone',
-        'emergency_contact_relationship'
-    ];
-    //Relación uno a uno inversa
-    public function patient(){
-        return $this->belongsTo(Patient::class);
     }
 }
