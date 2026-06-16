@@ -1,4 +1,10 @@
 <div class="flex items-center justify-end gap-2">
+    <a href="{{ route('admin.doctors.schedules', $row) }}"
+        title="Horarios"
+        class="inline-flex items-center justify-center rounded-lg bg-amber-500 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-amber-600">
+        <i class="fa-solid fa-clock"></i>
+        <span class="sr-only">Horarios</span>
+    </a>
     <a href="{{ route('admin.doctors.edit', $row) }}"
         title="Editar doctor"
         class="inline-flex items-center justify-center rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">

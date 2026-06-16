@@ -30,9 +30,27 @@ $links = [
 ],
 [
 'name' => 'Doctores',
-'icon' => 'fa-solid fa-users',
+'icon' => 'fa-solid fa-user-doctor',
 'href' => route('admin.doctors.index'),
 'active' => request()->routeIs('admin.doctors.*'),
+],
+[
+'name' => 'Citas',
+'icon' => 'fa-solid fa-calendar-check',
+'href' => route('admin.appointments.index'),
+'active' => request()->routeIs('admin.appointments.index') || request()->routeIs('admin.appointments.create') || request()->routeIs('admin.appointments.edit') || request()->routeIs('admin.appointments.show'),
+],
+[
+'name' => 'Calendarios',
+'icon' => 'fa-solid fa-calendar-days',
+'href' => route('admin.appointments.calendar'),
+'active' => request()->routeIs('admin.appointments.calendar'),
+],
+[
+'name' => 'Seguros',
+'icon' => 'fa-solid fa-file-shield',
+'href' => route('admin.insurances.index'),
+'active' => request()->routeIs('admin.insurances.*'),
 ],
 ];
 @endphp

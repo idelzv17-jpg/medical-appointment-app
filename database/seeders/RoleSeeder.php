@@ -15,6 +15,10 @@ class RoleSeeder extends Seeder
             'Recepcionista',
             'Administrador',
             'Super administrador',
+            'Contador',
+            'Enfermero',
+            'Técnico de laboratorio',
+            'Farmacéutico',        
         ];
 
         foreach ($roles as $name) {
@@ -22,6 +26,7 @@ class RoleSeeder extends Seeder
                 ['name' => $name, 'guard_name' => 'web'],
                 ['is_system' => true]
             );
+          
         }
     }
 }

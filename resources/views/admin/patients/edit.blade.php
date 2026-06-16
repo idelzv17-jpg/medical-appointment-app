@@ -1,4 +1,4 @@
-<x-admin-layout title="Pacientes | Healthify" :breadcrumbs="[
+<x-admin-layout title="Pacientes" :breadcrumbs="[
     [
         'name' => 'Dashboard',
         'href' => route('admin.dashboard'),
@@ -55,7 +55,7 @@
             $hasErrorsEmergencia = $errors->hasAny(['emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship']);
             $activeTab = $errors->any()
                 ? ($hasErrorsAntecedentes ? 'antecedentes' : ($hasErrorsGeneral ? 'general' : ($hasErrorsEmergencia ? 'emergencia' : 'personal')))
-                : 'personal';
+                : (in_array(request('tab'), ['personal', 'antecedentes', 'general', 'emergencia'], true) ? request('tab') : 'personal');
         @endphp
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

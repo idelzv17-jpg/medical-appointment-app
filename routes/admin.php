@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\DoctorController;
+use App\Http\Controllers\Admin\DoctorScheduleController;
+use App\Http\Controllers\Admin\InsuranceController;
 use App\Http\Controllers\Admin\PatientController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
@@ -29,5 +32,17 @@ Route::middleware([
 
     //Gestion de doctores
     Route::resource('doctors', DoctorController::class);
+    Route::get('doctors/{doctor}/schedules', [DoctorScheduleController::class, 'index'])
+        ->name('doctors.schedules');
+
+    //Gestion de citas
+    Route::get('appointments/calendar', [AppointmentController::class, 'calendar'])
+        ->name('appointments.calendar');
+    Route::resource('appointments', AppointmentController::class);
+    Route::get('appointments/{appointment}/consultation', [AppointmentController::class, 'consultation'])
+        ->name('appointments.consultation');
+
+    //Gestion de seguros
+    Route::resource('insurances', InsuranceController::class);
 
 });  
